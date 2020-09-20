@@ -28,15 +28,18 @@ def resetTypeVals():
     spellType.set("Normal")
     trapType.set("Normal")
 
-def specialSelect():
-    if currSpecial.get() != specialType.get():
-        level.set("")
-        currSpecial.set(specialType.get())
+def specialSelect(val):
+    if currSpecial.get() != val:
+        currSpecial.set(val)
 
-    if specialType.get() == "Normal":
+    if val == "Normal":
         effectFrame.pack_forget()
         flavorFrame.pack(pady=5)
-    #elif specialType.get() == "Xyz":
+    else:
+        flavorFrame.pack_forget()
+        effectFrame.pack(pady=5)
+        
+    #if specialType.get() == "Xyz":
     #elif specialType.get() == "Synchro":
     #elif specialType.get() == "Fusion":
     #elif specialType.get() == "Link":
@@ -51,7 +54,7 @@ def typeSelect():
         spellFrame.pack_forget()
         trapFrame.pack_forget()
         monsterFrame.pack(pady=5)
-        specialSelect()
+        specialSelect("Effect")
     elif cardType.get() == "Spell":
         monsterFrame.pack_forget()
         trapFrame.pack_forget()
@@ -120,12 +123,65 @@ levelOptions.pack(side=LEFT)
 
 specialTypeFrame = Frame(monsterFrame)
 specialTypeFrame.pack(padx=5, pady=5, side=LEFT)
-Label(levelFrame, text="Level:").pack(side=LEFT)
+Label(specialTypeFrame, text="Special Type:").pack(side=LEFT)
 specialTypes = ["Effect", "Normal", "Fusion", "Link", "Pendulum", "Ritual", "Synchro", "Xyz"]
 specialType = StringVar(None, "Effect")
 currSpecial = StringVar(None, "Effect")
-specialTypeOptions = OptionMenu(specialTypeFrame, specialType, *specialTypes)
+specialTypeOptions = OptionMenu(specialTypeFrame, specialType, *specialTypes, command=specialSelect)
 specialTypeOptions.pack(side=LEFT)
+
+monsterFrame2 = Frame(typeInfoFrame, width=250)
+monsterFrame2.pack(pady=5)
+
+monsterTypeFrame = Frame(monsterFrame2)
+monsterTypeFrame.pack(padx=5, pady=5)
+Label(monsterTypeFrame, text="Monster Type(s):").pack()
+monsterTypes = ["Aqua", "Beast", "Beast-Warrior",
+                "Cyberse", "Dinosaur", "Divine-Beast",
+                "Dragon", "Fairy", "Fiend", "Fish",
+                "Insect", "Machine", "Plant", "Psychic",
+                "Pyro", "Reptile", "Rock", "Sea Serpent",
+                "Spellcaster", "Thunder", "Warrior",
+                "Winged Beast", "Wyrm", "Zombie"]
+
+aqua = IntVar()
+beast = IntVar()
+beastWarrior = IntVar()
+cyberse = IntVar()
+dinosaur = IntVar()
+divineBeast = IntVar()
+dragon = IntVar()
+fairy = IntVar()
+fiend = IntVar()
+fish = IntVar()
+insect = IntVar()
+machine = IntVar()
+plant = IntVar()
+psychic = IntVar()
+pyro = IntVar()
+reptile = IntVar()
+rock = IntVar()
+seaSerpent = IntVar()
+spellcaster = IntVar()
+thunder = IntVar()
+warrior = IntVar()
+wingedBeast = IntVar()
+wyrm = IntVar()
+zombie = IntVar()
+
+monsterTypeVars = [aqua, beast, beastWarrior, cyberse,
+                   dinosaur, divineBeast, dragon, fairy,
+                   fiend, fish, insect, machine, plant,
+                   psychic, pyro, reptile, rock, seaSerpent,
+                   spellcaster, thunder, warrior,
+                   wingedBeast, wyrm, zombie]
+
+
+
+count = 0
+for m in monsterTypes:
+    Checkbutton(monsterTypeFrame, text=m, variable=monsterTypeVars[count], onvalue=1, offvalue=0).pack()
+    count += 1
 
 spellFrame = Frame(typeInfoFrame)
 spellTypeFrame = Frame(spellFrame)
