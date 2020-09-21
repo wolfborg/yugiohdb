@@ -49,6 +49,10 @@ def addEntry():
         if effect.get("1.0","end").strip():
             print("Effect: ")
             print(effect.get("1.0","end").strip())
+        if setCode.get(): print("Set: " + setCode.get())
+        if rarity.get(): print("Rarity: " + rarity.get())
+        if quantity.get(): print("Quantity: " + quantity.get())
+        
         print()
 
 def resetTypeVals():
@@ -132,7 +136,7 @@ def typeSelect():
     effectFrame.pack(pady=5)
 
 window = Tk()
-window.minsize(1200,900)
+window.minsize(600,900)
 
 Label(window, text="Enter Yugioh card info").pack()
 
@@ -161,7 +165,7 @@ for c in cardTypes:
     Radiobutton(typeFrame, text=c, variable=cardType, value=c, command=typeSelect).pack(side=LEFT)
 
 dataFrame = Frame(window)
-dataFrame.pack(padx=30, side=LEFT)
+dataFrame.pack(padx=30)
 
 typeInfoFrame = Frame(dataFrame)
 typeInfoFrame.pack()
@@ -225,19 +229,19 @@ nw, n, ne, w, e, sw, s, se = intVars
 zones = [nw, n, ne, w, e, sw, s, se]
 
 dir1Frame = Frame(linkZonesFrame)
-dir1Frame.pack(pady=5)
+dir1Frame.pack()
 Checkbutton(dir1Frame, text=linkDirs[0],variable=zones[0], onvalue=1, offvalue=0).pack(side=LEFT)
 Checkbutton(dir1Frame, text=linkDirs[1],variable=zones[1], onvalue=1, offvalue=0).pack(side=LEFT)
 Checkbutton(dir1Frame, text=linkDirs[2],variable=zones[2], onvalue=1, offvalue=0).pack(side=LEFT)
 dir2Frame = Frame(linkZonesFrame)
 Checkbutton(dir2Frame, text=linkDirs[3],variable=zones[3], onvalue=1, offvalue=0).pack(side=LEFT)
 Checkbutton(dir2Frame, text=linkDirs[4],variable=zones[4], onvalue=1, offvalue=0).pack(side=LEFT)
-dir2Frame.pack(pady=5)
+dir2Frame.pack()
 dir3Frame = Frame(linkZonesFrame)
 Checkbutton(dir3Frame, text=linkDirs[5],variable=zones[5], onvalue=1, offvalue=0).pack(side=LEFT)
 Checkbutton(dir3Frame, text=linkDirs[6],variable=zones[6], onvalue=1, offvalue=0).pack(side=LEFT)
 Checkbutton(dir3Frame, text=linkDirs[7],variable=zones[7], onvalue=1, offvalue=0).pack(side=LEFT)
-dir3Frame.pack(pady=5)
+dir3Frame.pack()
 
 monsterFrame2 = Frame(typeInfoFrame)
 monsterFrame2.pack(pady=5)
@@ -277,7 +281,7 @@ seperate = 6
 for m in monsterTypes:
     if sepCount % (seperate+1) == 0:
         rowFrame = Frame(monsterTypeFrame)
-        rowFrame.pack(padx=5, pady=5)
+        rowFrame.pack(padx=5)
         sepCount = 1
         seperate = 7
     Checkbutton(
@@ -344,14 +348,34 @@ typeSelect()
 
 
 inventoryFrame = Frame(window)
-inventoryFrame.pack(padx=30, side=LEFT)
+inventoryFrame.pack(pady=5)
 Label(inventoryFrame, text="Inventory:").pack()
+
+setFrame = Frame(inventoryFrame)
+setFrame.pack(padx=7, pady=5, side=LEFT)
+Label(setFrame, text="Set:").pack(side=LEFT)
+setCode = Entry(setFrame)
+setCode.pack(side=LEFT)
+
+rarityFrame = Frame(inventoryFrame)
+rarityFrame.pack(padx=7, pady=5, side=LEFT)
+Label(rarityFrame, text="Rarity:").pack(side=LEFT)
+rarity = Entry(rarityFrame, width=4)
+rarity.pack(side=LEFT)
+
+quantityFrame = Frame(inventoryFrame)
+quantityFrame.pack(padx=7, pady=5, side=LEFT)
+Label(quantityFrame, text="Qty:").pack(side=LEFT)
+quantity = Entry(quantityFrame, width=10)
+quantity.pack(side=LEFT)
+
+#button to add new row
 
 
 bottomFrame = Frame(window)
 bottomFrame.pack(side=BOTTOM)
 submit = Button(bottomFrame, text="Submit", width=25, command=addEntry)
-submit.pack(side=BOTTOM, pady=25)
+submit.pack(padx=50, pady=25)
 
 window.mainloop()
 
