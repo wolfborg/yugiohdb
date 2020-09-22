@@ -1,13 +1,14 @@
 import couchdb
+#import requests
+#import json
 from tkinter import *
 
-#server = couchdb.Server('http://admin:password@localhost:5984')
-#db = server['yugioh']
+server = couchdb.Server('http://admin:password@localhost:5984')
+db = server['yugioh']
 
 #for id in db:
 #    doc = db[id]
 #    print(doc['name'])
-
 
 def addEntry():
     if name.get():
@@ -15,45 +16,120 @@ def addEntry():
         print("Name: " + name.get())
         print("Serial: " + serial.get())
         print("Card Type: " + cardType.get())
+        card = {"name": name.get(),
+                "serial": serial.get(),
+                "type": cardType.get()}
         if cardType.get() == "Monster":
-            if specialType.get(): print("Special Type: " + specialType.get())
-            if attr.get(): print("Attribute: " + attr.get())
-            if level.get(): print("Level: " + str(level.get()))
-            if rank.get(): print("Rank: " + str(rank.get()))
-            if linkCost.get(): print("Link: " + str(linkCost.get()))
+            if specialType.get():
+                print("Special Type: " + specialType.get())
+                card["specialType"] = specialType.get()
+            if attr.get():
+                print("Attribute: " + attr.get())
+                card["attribute"] = attr.get()
+            if level.get():
+                print("Level: " + str(level.get()))
+                card["level"] = level.get()
+            if rank.get():
+                print("Rank: " + str(rank.get()))
+                card["rank"] = rank.get()
+            if linkCost.get():
+                print("Link: " + str(linkCost.get()))
+                card["linkCost"] = linkCost.get()
+            
 
             for m in monsterTypeVars:
                 if m.get() == 1:
                     print("Monster Type(s):")
+                    card["monsterType"] = []
                     break
             count = 0
             for m in monsterTypeVars:
-                if m.get() == 1: print("-- " + monsterTypes[count])
+                if m.get() == 1:
+                    print("-- " + monsterTypes[count])
+                    card["monsterType"].append(monsterTypes[count])
                 count += 1
             
             for z in zones:
                 if z.get() == 1:
                     print("Link Zone(s):")
+                    card["linkZones"] = []
                     break
             count = 0
             for z in zones:
-                if z.get() == 1: print("-- " + linkDirs[count])
+                if z.get() == 1:
+                    print("-- " + linkDirs[count])
+                    card["linkZones"].append(linkDirs[count])
                 count += 1
             
             print("ATK: " + str(atkVal.get()))
+            card["atk"] = atkVal.get()
             if specialType.get() != "Link":
                 print("DEF: " + str(defVal.get()))
-        if summonCost.get("1.0","end").strip():
-            print("Summon Cost(s): ")
-            print(summonCost.get("1.0","end").strip())
+                card["def"] = defVal.get()
+                
+            if summonCost.get("1.0","end").strip():
+                print("Summon Cost(s): ")
+                print(summonCost.get("1.0","end").strip())
+                card["summonCost"] = summonCost.get("1.0","end").strip()
+            if flavor.get("1.0","end").strip():
+                print("Flavor: ")
+                print(flavor.get("1.0","end").strip())
+                card["flavor"] = flavor.get("1.0","end").strip()
+
+        if cardType.get() == "Spell":
+            if spellType.get():
+                print("Spell Type: " + spellType.get())
+                card["spellType"] = spellType.get()
+
+        if cardType.get() == "Trap":
+            if trapType.get():
+                print("Trap Type: " + trapType.get())
+                card["trapType"] = trapType.get()
+        
         if effect.get("1.0","end").strip():
             print("Effect: ")
             print(effect.get("1.0","end").strip())
-        if setCode.get(): print("Set: " + setCode.get())
-        if rarity.get(): print("Rarity: " + rarity.get())
-        if quantity.get(): print("Quantity: " + quantity.get())
+            card["effect"] = effect.get("1.0","end").strip()
+
+        if setCode.get():
+            print("Set: " + setCode.get())
+            if edition.get(): print("Edition: " + edition.get())
+            if rarity.get(): print("Rarity: " + rarity.get())
+            if quantity.get(): print("Quantity: " + quantity.get())
+            inventory = [{"setCode": setCode.get(),
+                        "edition": edition.get(),
+                        "rarity": rarity.get(),
+                        "quantity": quantity.get()}]
+            card["inventory"] = inventory
         
         print()
+        db.save(card)
+        #url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?name=" + name.get()
+        #r = requests.get(url)
+        #data = r.json()
+        #print(data["data"][0]["name"])
+        #print(card)
+        #print()
+
+def resetForm():
+    name.delete(0,END)
+    serial.delete(0,END)
+    setCode.delete(0,END)
+    edition.delete(0,END)
+    rarity.delete(0,END)
+    quantity.delete(0,END)
+    resetTypeVals()
+    resetLevelVals()
+    resetStatVals()
+    resetMonsterTypeVals()
+    resetLinkZones()
+    resetSpellTrap()
+    effect.delete("1.0","end")
+    flavor.delete("1.0","end")
+    summonCost.delete("1.0","end")
+    specialType.set("Effect")
+    if cardType.get() == "Monster":
+        specialSelect("Effect")
 
 def resetTypeVals():
     attr.set("DARK")
@@ -75,13 +151,19 @@ def resetMonsterTypeVals():
 def resetLinkZones():
     for z in zones: z.set(0)
 
+def resetSpellTrap():
+    spellType.set("Normal")
+    trapType.set("Normal")
+
 def specialSelect(val):
     if val == "Normal":
         effectFrame.pack_forget()
         flavorFrame.pack(pady=5)
+        effect.delete("1.0","end")
     else:
         flavorFrame.pack_forget()
         effectFrame.pack(pady=5)
+        flavor.delete("1.0","end")
 
     if val == "Xyz" or val == "Link":
         levelFrame.pack_forget()
@@ -103,7 +185,9 @@ def specialSelect(val):
 
     if val != "Normal" and val != "Effect" and val != "Ritual" and val != "Pendulum":
         summonCostFrame.pack(pady=5)
-    else: summonCostFrame.pack_forget()
+    else:
+        summonCostFrame.pack_forget()
+        summonCost.delete("1.0","end")
     
     #elif specialType.get() == "Pendulum":
 
@@ -140,14 +224,17 @@ window.minsize(600,900)
 
 Label(window, text="Enter Yugioh card info").pack()
 
-nameFrame = Frame(window)
-nameFrame.pack(pady=5)
-Label(nameFrame, text="Name:").pack(side=LEFT)
-name = Entry(nameFrame, width=60)
-name.pack(side=LEFT)
-
 topFrame = Frame(window)
 topFrame.pack(pady=5)
+
+nameFrame = Frame(topFrame)
+nameFrame.pack(pady=5)
+Label(nameFrame, text="Name:").pack(side=LEFT)
+name = Entry(nameFrame, width=50)
+name.pack(side=LEFT)
+
+reset = Button(nameFrame, text="Reset", width=6, command=resetForm)
+reset.pack(padx=5, side=LEFT)
 
 serialFrame = Frame(topFrame)
 serialFrame.pack(padx=7, pady=5, side=LEFT)
@@ -356,6 +443,12 @@ setFrame.pack(padx=7, pady=5, side=LEFT)
 Label(setFrame, text="Set:").pack(side=LEFT)
 setCode = Entry(setFrame)
 setCode.pack(side=LEFT)
+
+editionFrame = Frame(inventoryFrame)
+editionFrame.pack(padx=7, pady=5, side=LEFT)
+Label(editionFrame, text="Edition:").pack(side=LEFT)
+edition = Entry(editionFrame, width=10)
+edition.pack(side=LEFT)
 
 rarityFrame = Frame(inventoryFrame)
 rarityFrame.pack(padx=7, pady=5, side=LEFT)
