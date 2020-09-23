@@ -10,12 +10,55 @@ db = server['yugioh']
 #    doc = db[id]
 #    print(doc['name'])
 
+def checkDatabase(data):
+    print()
+    print("Found in database.")
+    print("Num of entries: " + str(len(data["inventory"])))
+    
+    num = 0
+    doc_id = data["_id"]
+    for inv in data["inventory"]:
+        setCheck = inv["set_code"] == setCode.get()
+        editionCheck = inv["edition"] == edition.get()
+        rarityCheck = inv["rarity"] == rarity.get()
+        if setCheck and editionCheck and rarityCheck:
+            #update quantity
+            quantityChange = inv["quantity"] + int(quantity.get())
+            data["inventory"][num]["quantity"] = quantityChange
+            db[doc_id] = data
+            print("Quantity updated: " + str(quantityChange))
+            print()
+            return
+        else:
+            if num < len(data["inventory"])-1:
+                num += 1
+                continue
+            #add new entry to inventory
+            inventory = {"set_code": setCode.get(),
+                        "edition": edition.get(),
+                        "rarity": rarity.get(),
+                        "quantity": int(quantity.get())}
+            data["inventory"].append(inventory)
+            db[doc_id] = data
+            print("Inventory updated: " + str(data["inventory"][-1]))
+            print()
+            return
+    return
+
 def addEntry():
     if serial.get():
         print("Entry submitted.")
+        print("Name: " + name.get())
+        print("Serial: " + serial.get())
+
+        found = False
+        mango = {"selector": {"id": serial.get()}}
+        for i in db.find(mango):
+            checkDatabase(i)
+            return        
+        
         url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?id=" + serial.get()
-        r = requests.get(url)
-        data = r.json()
+        data = requests.get(url).json()
         if "data" in data:
             card = data["data"][0]
             card["id"] = serial.get()
@@ -31,8 +74,9 @@ def addEntry():
                 inventory = [{"set_code": setCode.get(),
                             "edition": edition.get(),
                             "rarity": rarity.get(),
-                            "quantity": quantity.get()}]
+                            "quantity": int(quantity.get())}]
                 card["inventory"] = inventory
+            print()
             print(card)
             db.save(card)
         else:
@@ -63,7 +107,6 @@ def searchCard():
         setCode.set(codes[0])
         for c in codes:
             setOptions["menu"].add_command(label=c, command=lambda x=c: setCode.set(x))
-        print(codes)
     else:
         print("Card not found: " + serial.get())
 
