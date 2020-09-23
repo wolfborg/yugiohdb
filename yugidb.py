@@ -13,16 +13,28 @@ db = server['yugioh']
 def addEntry():
     if serial.get():
         print("Entry submitted.")
-        #db.save(card)
         url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?id=" + serial.get()
         r = requests.get(url)
         data = r.json()
         try:
-            print(data["data"][0]["name"])
+            card = data["data"][0]
+            card.pop("card_sets")
+            card.pop("card_prices")
+            if setCode.get():
+                print("Set: " + setCode.get())
+                if edition.get(): print("Edition: " + edition.get())
+                if rarity.get(): print("Rarity: " + rarity.get())
+                if quantity.get(): print("Quantity: " + quantity.get())
+                inventory = [{"set_code": setCode.get(),
+                            "edition": edition.get(),
+                            "rarity": rarity.get(),
+                            "quantity": quantity.get()}]
+                card["inventory"] = inventory
+            #print(card)
+            db.save(card)
         except:
             print("Card not found: " + serial.get())
-        #print(card)
-        #print()
+        print()
 
 def resetForm():
     serial.delete(0,END)
