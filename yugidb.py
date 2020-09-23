@@ -16,10 +16,22 @@ def addEntry():
         url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?id=" + serial.get()
         r = requests.get(url)
         data = r.json()
-        try:
+        if "data" in data:
             card = data["data"][0]
-            card.pop("card_sets")
             card.pop("card_prices")
+            
+            sets = card.pop("card_sets")
+            codes = []
+            for s in sets:
+                code = s["set_code"]
+                if code not in codes:
+                    codes.append(code)
+
+            setOptions["menu"].delete(0,END)
+            setCode.set(codes[0])
+            for c in codes:
+                setOptions["menu"].add_command(label=c)
+            
             if setCode.get():
                 print("Set: " + setCode.get())
                 if edition.get(): print("Edition: " + edition.get())
@@ -30,18 +42,19 @@ def addEntry():
                             "rarity": rarity.get(),
                             "quantity": quantity.get()}]
                 card["inventory"] = inventory
-            #print(card)
-            db.save(card)
-        except:
+            print(card)
+            print(codes)
+            #db.save(card)
+        else:
             print("Card not found: " + serial.get())
         print()
 
 def resetForm():
     serial.delete(0,END)
-    setCode.delete(0,END)
-    edition.delete(0,END)
-    rarity.delete(0,END)
-    quantity.delete(0,END)
+    #setCode.delete(0,END)
+    #edition.delete(0,END)
+    #rarity.delete(0,END)
+    #quantity.delete(0,END)
 
 window = Tk()
 window.minsize(600,200)
@@ -60,6 +73,10 @@ serial.pack(side=LEFT)
 reset = Button(serialFrame, text="Reset", width=6, command=resetForm)
 reset.pack(padx=5, side=LEFT)
 
+imageFrame = Frame(window)
+imageFrame.pack(pady=5)
+canvas = Canvas(imageFrame)
+
 
 inventoryFrame = Frame(window)
 inventoryFrame.pack(pady=5)
@@ -68,20 +85,27 @@ Label(inventoryFrame, text="Inventory:").pack()
 setFrame = Frame(inventoryFrame)
 setFrame.pack(padx=7, pady=5, side=LEFT)
 Label(setFrame, text="Set:").pack(side=LEFT)
-setCode = Entry(setFrame, width=15)
-setCode.pack(side=LEFT)
+setCodes = [""]
+setCode = StringVar(None, "")
+setOptions = OptionMenu(setFrame, setCode, *setCodes)
+setOptions.pack(side=LEFT)
+
 
 editionFrame = Frame(inventoryFrame)
 editionFrame.pack(padx=7, pady=5, side=LEFT)
 Label(editionFrame, text="Edition:").pack(side=LEFT)
-edition = Entry(editionFrame, width=10)
-edition.pack(side=LEFT)
+editions = ["Unlimited", "1st", "Limited"]
+edition = StringVar(None, "1st")
+editionOptions = OptionMenu(editionFrame, edition, *editions)
+editionOptions.pack(side=LEFT)
 
 rarityFrame = Frame(inventoryFrame)
 rarityFrame.pack(padx=7, pady=5, side=LEFT)
 Label(rarityFrame, text="Rarity:").pack(side=LEFT)
-rarity = Entry(rarityFrame, width=4)
-rarity.pack(side=LEFT)
+rarities = ["C", "R", "SR", "UR", "ScR"]
+rarity = StringVar(None, "C")
+rarityOptions = OptionMenu(rarityFrame, rarity, *rarities)
+rarityOptions.pack(side=LEFT)
 
 quantityFrame = Frame(inventoryFrame)
 quantityFrame.pack(padx=7, pady=5, side=LEFT)
