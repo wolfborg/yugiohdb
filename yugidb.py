@@ -62,23 +62,25 @@ def addEntry():
         if "data" in data:
             card = data["data"][0]
             card["id"] = serial.get()
-            card.pop("card_prices")
-            card["card_images"][0].pop("id")
             
-            sets = card.pop("card_sets")
-            if setCode.get():
-                print("Set: " + setCode.get())
-                if edition.get(): print("Edition: " + edition.get())
-                if rarity.get(): print("Rarity: " + rarity.get())
-                if quantity.get(): print("Quantity: " + quantity.get())
-                inventory = [{"set_code": setCode.get(),
-                            "edition": edition.get(),
-                            "rarity": rarity.get(),
-                            "quantity": int(quantity.get())}]
-                card["inventory"] = inventory
-            print()
-            print(card)
+            if "card_prices" in card:
+                card.pop("card_prices")
+            if "id" in card["card_images"][0]:
+                card["card_images"][0].pop("id")
+
+            if "card_sets" in card:
+                card.pop("card_sets")
+            if setCode.get(): print("Set: " + setCode.get())
+            if edition.get(): print("Edition: " + edition.get())
+            if rarity.get(): print("Rarity: " + rarity.get())
+            if quantity.get(): print("Quantity: " + quantity.get())
+            inventory = [{"set_code": setCode.get(),
+                        "edition": edition.get(),
+                        "rarity": rarity.get(),
+                        "quantity": int(quantity.get())}]
+            card["inventory"] = inventory
             db.save(card)
+            print("Added to database.")
         else:
             print("Card not found: " + serial.get())
         print()
@@ -96,17 +98,19 @@ def searchCard():
     if "data" in data:
         card = data["data"][0]
         name.set(card["name"])
-            
-        sets = card.pop("card_sets")
-        codes = []
-        for s in sets:
-            code = s["set_code"]
-            if code not in codes:
-                codes.append(code)
         setOptions["menu"].delete(0,END)
-        setCode.set(codes[0])
-        for c in codes:
-            setOptions["menu"].add_command(label=c, command=lambda x=c: setCode.set(x))
+        setCode.set("")
+
+        if "card_sets" in card:
+            sets = card.pop("card_sets")
+            codes = []
+            for s in sets:
+                code = s["set_code"]
+                if code not in codes:
+                    codes.append(code)
+            setCode.set(codes[0])
+            for c in codes:
+                setOptions["menu"].add_command(label=c, command=lambda x=c: setCode.set(x))
     else:
         print("Card not found: " + serial.get())
 
