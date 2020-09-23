@@ -18,20 +18,11 @@ def addEntry():
         data = r.json()
         if "data" in data:
             card = data["data"][0]
+            card["id"] = serial.get()
             card.pop("card_prices")
+            card["card_images"][0].pop("id")
             
             sets = card.pop("card_sets")
-            codes = []
-            for s in sets:
-                code = s["set_code"]
-                if code not in codes:
-                    codes.append(code)
-
-            setOptions["menu"].delete(0,END)
-            setCode.set(codes[0])
-            for c in codes:
-                setOptions["menu"].add_command(label=c)
-            
             if setCode.get():
                 print("Set: " + setCode.get())
                 if edition.get(): print("Edition: " + edition.get())
@@ -43,18 +34,38 @@ def addEntry():
                             "quantity": quantity.get()}]
                 card["inventory"] = inventory
             print(card)
-            print(codes)
-            #db.save(card)
+            db.save(card)
         else:
             print("Card not found: " + serial.get())
         print()
 
 def resetForm():
     serial.delete(0,END)
-    #setCode.delete(0,END)
-    #edition.delete(0,END)
-    #rarity.delete(0,END)
-    #quantity.delete(0,END)
+    setOptions["menu"].delete(0,END)
+    setCode.set("")
+    name.set("")
+    quantity.delete(0,END)
+
+def searchCard():
+    url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?id=" + serial.get()
+    data = requests.get(url).json()
+    if "data" in data:
+        card = data["data"][0]
+        name.set(card["name"])
+            
+        sets = card.pop("card_sets")
+        codes = []
+        for s in sets:
+            code = s["set_code"]
+            if code not in codes:
+                codes.append(code)
+        setOptions["menu"].delete(0,END)
+        setCode.set(codes[0])
+        for c in codes:
+            setOptions["menu"].add_command(label=c, command=lambda x=c: setCode.set(x))
+        print(codes)
+    else:
+        print("Card not found: " + serial.get())
 
 window = Tk()
 window.minsize(600,200)
@@ -73,14 +84,10 @@ serial.pack(side=LEFT)
 reset = Button(serialFrame, text="Reset", width=6, command=resetForm)
 reset.pack(padx=5, side=LEFT)
 
-imageFrame = Frame(window)
-imageFrame.pack(pady=5)
-canvas = Canvas(imageFrame)
-
-
 inventoryFrame = Frame(window)
 inventoryFrame.pack(pady=5)
-Label(inventoryFrame, text="Inventory:").pack()
+name = StringVar(None, "")
+Label(inventoryFrame, textvariable=name).pack()
 
 setFrame = Frame(inventoryFrame)
 setFrame.pack(padx=7, pady=5, side=LEFT)
@@ -115,8 +122,12 @@ quantity.pack(side=LEFT)
 
 bottomFrame = Frame(window)
 bottomFrame.pack(side=BOTTOM)
-submit = Button(bottomFrame, text="Submit", width=25, command=addEntry)
-submit.pack(padx=50, pady=25)
+
+submit = Button(bottomFrame, text="Submit", width=15, command=addEntry)
+submit.pack(padx=50, pady=15, side=LEFT)
+
+search = Button(bottomFrame, text="Search", width=15, command=searchCard)
+search.pack(padx=50, pady=5, side=LEFT)
 
 window.mainloop()
 
